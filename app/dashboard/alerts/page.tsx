@@ -39,7 +39,7 @@ export default function AlertsPage() {
         (a, b) =>
           new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
       )
-  }, [severityFilter, typeFilter])
+  }, [alerts, severityFilter, typeFilter])
 
   const unresolvedCount = alerts.filter((a) => !a.is_resolved).length
   const criticalCount = alerts.filter(

@@ -87,7 +87,7 @@ export default function VoterLookupPage() {
       const matchBooth = boothFilter === "all" || v.booth_id === boothFilter
       return matchSearch && matchState && matchStatus && matchBooth
     })
-  }, [search, stateFilter, statusFilter, boothFilter])
+  }, [voterRegistry, search, stateFilter, statusFilter, boothFilter])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
