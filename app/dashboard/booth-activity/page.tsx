@@ -31,6 +31,7 @@ import { Separator } from "@/components/ui/separator"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { useAuthenticatedRows } from "@/lib/use-authenticated-rows"
 import { loadVoterActivity } from "@/lib/supabase-queries"
+import { demoActivityRows } from "@/lib/demo-fallback"
 import type { Database } from "@/lib/database.types"
 
 const PAGE_SIZE = 15
@@ -49,7 +50,7 @@ export default function BoothActivityPage() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(0)
   const [selectedEntry, setSelectedEntry] = useState<ActivityRecord | null>(null)
-  const activityData = useAuthenticatedRows<ActivityRecord>(loadVoterActivity)
+  const activityData = useAuthenticatedRows<ActivityRecord>(loadVoterActivity, demoActivityRows)
   const entries = activityData.rows
   const boothIds = [...new Set(entries.map((entry) => entry.booth_id).filter((id): id is string => Boolean(id)))].sort()
 

@@ -23,6 +23,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuthenticatedRows } from "@/lib/use-authenticated-rows"
 import { loadBooths } from "@/lib/supabase-queries"
+import { demoBoothRows } from "@/lib/demo-fallback"
 import type { Database } from "@/lib/database.types"
 
 const PAGE_SIZE = 12
@@ -33,7 +34,7 @@ export default function BoothsPage() {
   const [stateFilter, setStateFilter] = useState<string>("all")
   const [districtFilter, setDistrictFilter] = useState<string>("all")
   const [page, setPage] = useState(0)
-  const boothData = useAuthenticatedRows<BoothRecord>(loadBooths)
+  const boothData = useAuthenticatedRows<BoothRecord>(loadBooths, demoBoothRows)
   const booths = boothData.rows
   const states = [...new Set(booths.map((booth) => booth.state).filter((value): value is string => Boolean(value)))].sort()
   const districts = [...new Set(booths.map((booth) => booth.district).filter((value): value is string => Boolean(value)))].sort()
@@ -63,7 +64,7 @@ export default function BoothsPage() {
           Booth Monitoring
         </h1>
         <p className="text-sm text-muted-foreground">
-          Monitor all polling booths across regions in real-time
+          Monitor all polling booths across regions in real-time{" "}{boothData.source === "demo" && "· Demo data"}
         </p>
       </div>
 

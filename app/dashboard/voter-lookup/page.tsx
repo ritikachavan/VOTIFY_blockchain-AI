@@ -49,6 +49,7 @@ import { Progress } from "@/components/ui/progress"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { useAuthenticatedRows } from "@/lib/use-authenticated-rows"
 import { loadVoters } from "@/lib/supabase-queries"
+import { demoVoterRows } from "@/lib/demo-fallback"
 import type { Database } from "@/lib/database.types"
 import { formatNumber } from "@/lib/format"
 
@@ -65,7 +66,7 @@ export default function VoterLookupPage() {
   const [boothFilter, setBoothFilter] = useState<string>("all")
   const [page, setPage] = useState(0)
   const [selectedVoter, setSelectedVoter] = useState<VoterRecord | null>(null)
-  const voterData = useAuthenticatedRows<VoterRecord>(loadVoters)
+  const voterData = useAuthenticatedRows<VoterRecord>(loadVoters, demoVoterRows)
   const voterRegistry = voterData.rows
   const allStates = [...new Set(voterRegistry.map((voter) => voter.state).filter((value): value is string => Boolean(value)))].sort()
   const boothIds = [...new Set(voterRegistry.map((voter) => voter.booth_id).filter((value): value is string => Boolean(value)))].sort()

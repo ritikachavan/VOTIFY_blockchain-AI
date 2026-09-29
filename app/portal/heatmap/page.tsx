@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAuthenticatedRows } from "@/lib/use-authenticated-rows"
 import { loadBooths } from "@/lib/supabase-queries"
+import { demoBoothRows } from "@/lib/demo-fallback"
 import type { Database } from "@/lib/database.types"
 
 type BoothRecord = Pick<Database["public"]["Tables"]["booths"]["Row"], "id" | "booth_code" | "booth_name" | "location" | "district" | "state">
@@ -15,7 +16,7 @@ export default function HeatmapPage() {
   const [drillLevel, setDrillLevel] = useState<DrillLevel>("state")
   const [selectedState, setSelectedState] = useState<string | null>(null)
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
-  const boothData = useAuthenticatedRows<BoothRecord>(loadBooths)
+  const boothData = useAuthenticatedRows<BoothRecord>(loadBooths, demoBoothRows)
   const booths = boothData.rows
   const states = [...new Set(booths.map((booth) => booth.state).filter((value): value is string => Boolean(value)))].sort()
   const districts = selectedState
@@ -54,7 +55,7 @@ export default function HeatmapPage() {
         </div>
       </div>
 
-      <Card><CardContent className="flex items-center gap-2 p-4 text-sm text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-warning" />The schema contains booth locations but no vote totals, turnout denominator, risk status, or online status. This view shows registered booth coverage only.</CardContent></Card>
+      <Card><CardContent className="flex items-center gap-2 p-4 text-sm text-muted-foreground"><AlertTriangle className="h-4 w-4 shrink-0 text-warning" />The schema contains booth locations but no vote totals, turnout denominator, risk status, or online status. {boothData.source === "demo" ? "Demo booth data is shown because live booth rows are not available. This view shows registered booth coverage only." : "This view shows registered booth coverage only."}</CardContent></Card>
 
       {boothData.status !== "ready" ? <Card><CardContent className={`flex min-h-40 items-center justify-center p-6 text-center text-sm ${boothData.status === "error" ? "text-destructive" : "text-muted-foreground"}`} role={boothData.status === "error" ? "alert" : undefined}>{boothData.status === "error" ? boothData.error : stateMessage}</CardContent></Card> : <>
         {drillLevel === "state" && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{states.map((state) => {

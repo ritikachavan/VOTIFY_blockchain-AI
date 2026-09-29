@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { KpiCard } from "@/components/dashboard/kpi-card"
 import { useAuthenticatedRows } from "@/lib/use-authenticated-rows"
 import { loadAlerts } from "@/lib/supabase-queries"
+import { demoAlertRows } from "@/lib/demo-fallback"
 import type { Database } from "@/lib/database.types"
 
 type AlertRecord = Pick<
@@ -23,7 +24,7 @@ type AlertRecord = Pick<
 export default function AlertsPage() {
   const [severityFilter, setSeverityFilter] = useState<string>("all")
   const [typeFilter, setTypeFilter] = useState<string>("all")
-  const alertData = useAuthenticatedRows<AlertRecord>(loadAlerts)
+  const alertData = useAuthenticatedRows<AlertRecord>(loadAlerts, demoAlertRows)
   const alerts = alertData.rows
 
   const filtered = useMemo(() => {
@@ -52,7 +53,7 @@ export default function AlertsPage() {
           Alert Center
         </h1>
         <p className="text-sm text-muted-foreground">
-          Monitor and manage all system alerts and AI-detected anomalies
+          Monitor and manage all system alerts and AI-detected anomalies{" "}{alertData.source === "demo" && "· Demo data"}
         </p>
       </div>
 
@@ -61,7 +62,7 @@ export default function AlertsPage() {
         <KpiCard
           title="Active Alerts"
           value={alertData.status === "ready" ? unresolvedCount : alertData.status === "loading" ? "Loading..." : "Unavailable"}
-          subtitle={alertData.error ?? `${alerts.length} returned anonymously`}
+          subtitle={alertData.source === "demo" ? "Original demo alert dataset" : `${alerts.length} returned anonymously`}
           icon={AlertTriangle}
           variant="warning"
         />
