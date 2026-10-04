@@ -1,129 +1,173 @@
-# Votify — Secure Election Monitoring Platform
+# Votify — AI and Blockchain-Driven E-Voting Monitoring Ecosystem
 
-Votify is a real-time election monitoring dashboard built for command-center style oversight of live voting data. It combines vote-count tracking, booth-level monitoring, AI-assisted fraud/integrity alerts, and public-facing transparency tools in a single platform.
+A closed-loop voting platform combining facial-recognition verification, a physical hardware
+voting booth, a live administrator dashboard, and AI-based anomaly monitoring — with blockchain
+storage as its next extension.
 
-**Live demo:** https://v0-votify-election-platform-2.vercel.app/dashboard
+**Status: Research prototype.** Some features in the original design (blockchain ledger, AI
+anomaly-detection model, quantitative benchmarking) are proposed but not yet implemented. See
+[Implementation Status](#implementation-status) below for exactly what works today.
 
-> This README describes the application as observed in the deployed demo. Adjust setup/config sections below to match the actual repository once source code is available.
-
----
-
-## ✨ Features
-
-### Command Center (Admin Dashboard)
-- **Live overview metrics** — total votes, active booths, active alerts, and turnout, each with real-time deltas (e.g. "+12.3% vs last hour").
-- **Live vote trend** chart tracking votes over time.
-- **Candidate-wise vote distribution** visualization.
-- **Recent alerts feed** with severity levels (Critical / High) and AI confidence scores (e.g. "AI Fraud Detection: 94.2%").
-- **Region breakdown table** — booths online, votes cast, turnout %, and leading candidate per region/state.
-
-### Booth Monitoring
-- Per-booth status tracking (online/offline, communication issues).
-- Booth activity logs for granular, time-stamped event tracking.
-
-### Alerts
-- Centralized alert center surfacing anomalies such as:
-  - Ledger tampering suspicion
-  - Unusual vote spikes
-  - Duplicate voter ID attempts
-  - EVM (Electronic Voting Machine) communication loss
-- Alerts are tagged by severity and, where applicable, an AI-generated confidence score.
-
-### Ledger
-- Tamper-evident vote ledger view for auditing vote records and detecting integrity issues.
-
-### Voter Lookup
-- Lookup tooling to verify individual voter records/status.
-
-### Analytics
-- **Vote velocity tracking** — current, peak, and average votes/minute.
-- **Vote acceleration** — momentum/change in velocity hour-over-hour.
-- **Candidate race tracker** — vote share over time.
-- **Victory probability model** — projected winner with win probability, based on current trends and historical data.
-- **State turnout comparison** — turnout vs. previous election, by state.
-- **State health radar** — combined view of turnout, booth uptime, and risk score per state.
-
-### EVM Audit
-- Dedicated audit trail for electronic voting machines (hardware status, communication integrity).
-
-### Reports
-- Report generation/export for election data.
-
-### Public Access
-- **Public Portal** — a public-facing, simplified view of election results for transparency.
-- **Election Heatmap** — geographic visualization of voting activity/turnout.
+Built by Ritika Chavan, Rakhi Gaud, and Purva Kakade — Department of Artificial Intelligence,
+Usha Mittal Institute of Technology, SNDT Women's University, under the guidance of
+Prof. Prakash Khelage.
 
 ---
 
-## 🖥️ Tech Notes (inferred)
+## Why Votify
 
-The app is deployed on **Vercel** and follows a Next.js-style route structure:
+Traditional voting systems struggle with transparency, tamper resistance, and real-time fraud
+visibility. Most research fixes solve one of these at a time. Votify's thesis is that voter
+verification, vote storage, and live fraud monitoring should be one closed-loop system.
+
+This project includes a systematic review of 14 base papers (2023–2026) on blockchain voting,
+biometric authentication, and AI-based fraud detection, and positions Votify's design against the
+gaps that review surfaces:
+
+- Blockchain voting systems are strong on cryptography and throughput, but rarely include AI
+  monitoring or an admin dashboard.
+- Biometric voting systems verify identity once at login, but don't monitor activity afterward.
+- Surveys call for an integrated AI + blockchain system, but none build one.
+
+Votify combines facial-recognition verification, a low-cost hardware booth, live activity
+logging, and an administrator dashboard in one system — a combination not found in full in any
+single reviewed paper.
+
+---
+
+## Implementation Status
+
+### Built and functionally tested
+
+- Facial verification — Python (`face.py`) using OpenCV + DeepFace
+- Hardware voting booth — NodeMCU ESP8266 + RC522 RFID reader + ST7735 TFT display + DS1307 RTC + piezo buzzer
+- Hardware-software link — USB Serial, COM3 @ 115200 baud
+- Vote/activity storage — Supabase (PostgreSQL) `booth_activity` table via HTTP REST
+- Live dashboard sync — Supabase Realtime → Next.js dashboard (Vercel)
+- One-vote enforcement — checked against voter status before recording
+- Testing performed — end-to-end functional walkthrough; Wokwi-simulated and single-unit hardware prototype
+
+### Designed, not yet implemented
+
+- **Blockchain ledger** — proposed in the architecture, but the current build uses Supabase/Postgres instead. This is a known, tracked conflict (see Roadmap).
+- **AI anomaly detection** — an Isolation Forest / Random Forest model is specified in the design but not yet built or evaluated.
+- **Quantitative metrics** — no measured accuracy, latency, or precision/recall numbers yet. Dashboard analytics shown use sample data for demonstration, not live results.
+- **Flutter/Flask stack** — the original design spec; the as-built system uses Next.js and Python instead.
+- **Field/load testing** — not yet performed.
+
+---
+
+## Architecture
+
+Target design:
 
 ```
-/dashboard                  → Command Center
-/dashboard/booths           → Booth Monitoring
-/dashboard/alerts           → Alerts
-/dashboard/ledger           → Ledger
-/dashboard/booth-activity   → Booth Activity
-/dashboard/voter-lookup     → Voter Lookup
-/dashboard/analytics        → Live Election Analytics
-/dashboard/evm-audit        → EVM Audit
-/dashboard/reports          → Reports
-/portal                     → Public Portal
-/portal/heatmap             → Election Heatmap
+Voter Interface -> Authentication -> Vote Processing -> Blockchain Storage -> AI Monitoring
+                                                                 |
+                                                     Administrator Dashboard
 ```
 
-It appears to have been scaffolded with **v0** (Vercel's AI UI generator), based on the deployment URL pattern.
+As actually built:
+
+```
+face.py (OpenCV + DeepFace)
+   | USB Serial (COM3)
+NodeMCU ESP8266 (RFID / TFT / RTC / Buzzer)
+   |
+Supabase (Postgres) booth_activity table
+   | Supabase Realtime
+Next.js Dashboard (Vercel)
+```
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack
+
+As-built: Next.js, Vercel, Python, OpenCV, DeepFace, Supabase, PostgreSQL, Arduino C++, NodeMCU ESP8266
+
+Proposed extensions: Blockchain ledger (consensus TBD), Isolation Forest / Random Forest anomaly model, Flutter, Flask
+
+---
+
+## Hardware
+
+| Component | Role |
+|---|---|
+| NodeMCU ESP8266 | Main controller |
+| RC522 RFID Reader | Voter card identification |
+| ST7735 1.8" SPI TFT | Visual feedback to voter |
+| DS1307 RTC | Vote timestamping |
+| Piezo Buzzer | Audio confirmation |
+
+Booth state flow: Locked -> Tag Scan -> Biometric Verification -> Authorized -> Vote & Reset
+(30-second security timeout reverts to Locked if voting isn't completed)
+
+---
+
+## Getting Started
 
 ```bash
-# clone the repository
-git clone <your-repo-url>
-cd votify
-
-# install dependencies
+git clone https://github.com/ritikachavan/VOTIFY_blockchain-AI
+cd VOTIFY_blockchain-AI
 npm install
-
-# run the development server
 npm run dev
 ```
 
-Then open [http://localhost:3000/dashboard](http://localhost:3000/dashboard) in your browser.
+Open `http://localhost:3000/dashboard`.
 
-### Environment Variables
+**Hardware setup:** Flash the Arduino C++ firmware to the ESP8266, wire the RFID reader, TFT
+display, RTC, and buzzer per the circuit diagram, and connect via USB.
 
-If your build connects to a real data source, you'll typically need something like:
+**Software setup:** Set up Python with OpenCV and DeepFace for `face.py`, point it at your serial
+port (default COM3 @ 115200 baud), and configure Supabase:
 
-```env
-NEXT_PUBLIC_API_BASE_URL=
-DATABASE_URL=
-NEXT_PUBLIC_MAPS_API_KEY=
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-> Replace with the actual variables required by your backend/data integration.
+---
+
+## Benchmarks: Votify vs. the Literature
+
+Votify's current contribution is architectural and functional, not yet a quantitative improvement
+on any single metric. Here's how it compares to the strongest reported results in the reviewed
+literature:
+
+| Metric | Best Reported (Literature) | Votify (Current) |
+|---|---|---|
+| Authentication accuracy | 99.68% TAR [1]; 95.7% first-attempt [10] | Functionally verified end-to-end; not yet measured |
+| Anomaly-detection quality | 90.0% F1 [1]; 97% breach detection [7] | Model not yet implemented |
+| Ledger tamper evidence | 100%, SHA-256 blockchain [1] | No blockchain in current build |
+| Latency | 2.3s [7]; 45% throughput gain [2] | 10s serial confirmation window observed; not yet benchmarked |
+| Field/uptime validation | 300-voter field test, 99.2% uptime [10] | Simulated and single-unit prototype only |
+
+Closing these rows with Votify's own measured numbers is the immediate next milestone.
 
 ---
 
-## 📦 Deployment
+## Roadmap
 
-The project is set up for one-click deployment on **Vercel**:
-
-1. Push your repository to GitHub.
-2. Import the repo into [Vercel](https://vercel.com/new).
-3. Set required environment variables.
-4. Deploy.
-
----
-
-## ⚠️ Disclaimer
-
-This is a monitoring/demo dashboard interface. It does **not** itself tally, cast, or certify votes — it is intended to visualize and surface integrity signals from an underlying election data source. Any "AI fraud detection" scores, projected winners, or victory probabilities shown are illustrative/statistical estimates, not official results.
+- Resolve the blockchain-vs-Postgres conflict — implement a real ledger or formally re-scope the integrity claim to Postgres constraints/RLS/audit logging
+- Build and evaluate the AI anomaly-detection model
+- Measure real accuracy, latency, and anomaly-detection metrics
+- Document the hardware-backend wire protocol
+- Add dedicated subsystem flowcharts (auth, vote processing, AI monitoring)
+- Multi-voter / multi-booth field and load testing
 
 ---
 
-## 📄 License
+## Academic Context
 
-Add your license of choice here (e.g. MIT).
+Documented in an accompanying research paper reviewing 14 base papers (2023–2026) on blockchain
+and biometric e-voting, with a full gap analysis positioning Votify's design against the
+literature. The paper is explicit that the current prototype is a functional and architectural
+contribution — the next step is closing the gap on measured performance.
+
+Authors: Ritika Chavan, Rakhi Gaud, Purva Kakade
+Guide: Prof. Prakash Khelage
+Institution: Department of Artificial Intelligence, Usha Mittal Institute of Technology, SNDT Women's University
+
+## License
+
+Add your license of choice here (e.g. MIT).v
